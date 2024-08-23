@@ -11,6 +11,10 @@ def getDate():
     playlisttitle = datetime.strftime(todaytime,'%B %Y') #Month YYYY
     today = datetime.strftime(todaytime, '%Y-%m') #YYYY-MM
 
+    #Uncomment and change for specific Month and Year
+    # playlisttitle = "January 2021"
+    # today = "2021-01"
+    
     return playlisttitle, today
 
 #assign parameters for authorization
