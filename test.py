@@ -18,6 +18,7 @@ def authorize():
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(CLIENT_ID,CLIENT_SECRET,REDIRECTURI,scope=SCOPE,cache_path=CACHE))
     user = sp.current_user()
     userid = user['id']
+    print(sp.playlist_tracks())
     return sp, userid
 
 #get all playlists
