@@ -5,7 +5,12 @@
     <title>Monthly Playlist</title>
 </head>
 <body>
-    <h1 style='text-align:center'>Current User</h1>
-    <h3 style='text-align:center'>{{ data }}</h3>
+    <h1 style='text-align:center'>Hey, {{user}}!</h1>
+    <h2 style='text-align:center'>Your playlist was created!</h2>
+    <h3 style='text-align:center'>{{listlen}} tracks were added to '{{date}}'</h3>
+
+    {% for song in songlist %}
+        <p style='text-align:center'>{{song}}</p>
+    {% endfor %}
 </body>
 </html>

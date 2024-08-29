@@ -1,4 +1,5 @@
 credentials.py
-app.py
 .cache
 _pycache_
+.spotipyoauthcache
+appredo.py

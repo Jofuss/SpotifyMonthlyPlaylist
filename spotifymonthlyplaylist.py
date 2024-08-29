@@ -1,3 +1,8 @@
+### This is the foundation without Flask
+### This is ran locally
+
+
+
 #Import Libraries
 import spotipy
 import time
