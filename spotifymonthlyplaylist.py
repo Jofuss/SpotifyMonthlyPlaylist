@@ -8,7 +8,7 @@ import spotipy
 import time
 from spotipy import SpotifyOAuth
 from datetime import datetime
-from credentials import CLIENT_ID,CLIENT_SECRET,SCOPE,REDIRECTURI,CACHE,SECRET_KEY,TOKEN_CODE
+from credentials import CLIENT_ID,CLIENT_SECRET,SCOPE,REDIRECTURI,CACHE
 
 #gets today's date and converts to YYYY-MM and "Month YYYY"
 def getDate():
@@ -17,8 +17,8 @@ def getDate():
     today = datetime.strftime(todaytime, '%Y-%m') #YYYY-MM
 
     #Uncomment and change for specific Month and Year
-    # playlisttitle = "January 2021"
-    # today = "2021-01"
+    # playlisttitle = "March 2023"
+    # today = "2023-03"
     
     return playlisttitle, today
 
@@ -121,8 +121,10 @@ def putAllTogether(today,playlistid):
             i += 1
         else:
             i += 1
-            
-    addtracks(playlistid, addtrackslist) #adds remainder of tracks that doesn reach the 100 track limit (end of library)
+    if len(addtrackslist) == 0:
+        print("Saved no songs from that month")
+    else:
+        addtracks(playlistid, addtrackslist) #adds remainder of tracks that doesn reach the 100 track limit (end of library)
     
     print('Number of tracks added: ' + str(numofsongs))
     print('Playlist "' + playlisttitle + '", is ready')

@@ -10,10 +10,9 @@ from datetime import datetime
 from flask import Flask, request, session, redirect, render_template
 from credentials import CLIENT_ID,CLIENT_SECRET,SCOPE,REDIRECTURI
 
-SECRET_KEY = os.urandom(15)
 
 app = Flask(__name__)
-app.secret_key = SECRET_KEY
+app.config['SECRET_KEY'] = os.urandom(15).hex()
 
 ##################################################################
 ### FLASK PAGES ###
@@ -193,8 +192,11 @@ def putAllTogether(today,playlisttitle, sp, userid):
         else:
             i += 1
             
-    sp.playlist_add_items(playlistid, addtrackslist) #adds remainder of tracks that doesn reach the 100 track limit (end of library)
-    
+    if len(addtrackslist) == 0:
+        print("Saved no songs from that month")
+    else:
+        sp.playlist_add_items(playlistid, addtrackslist) #adds remainder of tracks that doesn reach the 100 track limit (end of library)
+            
     return playlistid
 
 if __name__ == "__main__":
