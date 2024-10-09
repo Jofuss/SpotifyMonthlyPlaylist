@@ -1,0 +1,11 @@
+# CLIENT_ID=os.environ.get('CLIENT_ID')
+CLIENT_ID='377a4e5484a945d59ac5eb2bb45c2601'
+# CLIENT_SECRET=os.environ.get('CLIENT_SECRET')
+CLIENT_SECRET='eca14c9e9540431d82f568e4462ab55e'
+SCOPE='user-library-read playlist-read-private playlist-modify-private'
+CACHE='.spotipyoauthcache'
+REDIRECTURI='http://127.0.0.1:5000/callback'
+# REDIRECTURI='http://jofuss.pythonanywhere.com/callback'
+AUTH_URL='https://accounts.spotify.com/authorize'
+TOKEN_URL='https://accounts.spotify.com/api/token'
+URL_BASE='https://api.spotify.com/v1/'
