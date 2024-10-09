@@ -6,7 +6,7 @@ import spotipy
 import time
 from spotipy import SpotifyOAuth
 from datetime import datetime
-from credentials import CLIENT_ID,CLIENT_SECRET,SCOPE,REDIRECTURI,CACHE
+from important import CLIENT_ID,CLIENT_SECRET,SCOPE,REDIRECTURI,CACHE
 
 #gets today's date and converts to YYYY-MM and "Month YYYY"
 def getDate():

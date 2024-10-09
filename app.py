@@ -8,7 +8,7 @@ import spotipy
 import hashlib
 import requests
 from datetime import datetime
-from credentials import CLIENT_ID, SCOPE, REDIRECTURI,TOKEN_URL
+from important import CLIENT_ID, SCOPE, REDIRECTURI,TOKEN_URL
 from flask import Flask, request, session, redirect, render_template
 
 #################################################
