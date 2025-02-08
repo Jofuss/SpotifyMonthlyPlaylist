@@ -1,4 +1,4 @@
-### This is the full application with flask
+### This is the full application with flask 
 
 ### IMPORT LIBRARIES ###
 import os
@@ -8,14 +8,18 @@ import spotipy
 import hashlib
 import requests
 from datetime import datetime
-from important import CLIENT_ID, SCOPE, REDIRECTURI,TOKEN_URL
+from credentials import CLIENT_ID, SCOPE, REDIRECTURI,TOKEN_URL
 from flask import Flask, request, session, redirect, render_template
+from flask_session import Session
 
 #################################################
 #create flask app
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.urandom(20).hex()
-
+app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_FILE_DIR'] = './flask_session'
+app.config['SESSION_PERMANENT'] = False
+Session(app)
 #################################################
 ### BEGIN FLASK PAGES ###
 
@@ -27,12 +31,16 @@ def home():
 #asks for authorization then redirects
 @app.route('/login')
 def login():
-    code_verifer = os.urandom(32).hex()
-    session['code_verifier'] = code_verifer
+    code_verifier = base64.urlsafe_b64encode(os.urandom(32)).decode().rstrip('=')
+    session['code_verifier'] = code_verifier
+    
     code_challenge = base64.urlsafe_b64encode(
-        hashlib.sha256(code_verifer.encode()).digest()
+        hashlib.sha256(code_verifier.encode()).digest()
     ).decode().rstrip('=')
     
+    print("Generated Code Verifier:", code_verifier)
+    print("Generated Code Challenge:", code_challenge)
+    print('')
     auth_url = (
         f"https://accounts.spotify.com/authorize?response_type=code&"
         f"client_id={CLIENT_ID}&redirect_uri={REDIRECTURI}&"
@@ -45,8 +53,15 @@ def login():
 @app.route('/callback')
 def callback():
     auth_code = request.args.get('code')
-    code_verifier = session['code_verifier']
+    print("Authorization Code:", auth_code)
+    if not auth_code:
+        return "Authorization code not found in the callback URL.", 400
     
+    code_verifier = session.get('code_verifier')
+    print("Code Verifier:", code_verifier)
+    if not code_verifier:
+        return "Code verifier not found in session.",400
+    print('')
     payload = {
         'grant_type':'authorization_code',
         'code':auth_code,
@@ -54,47 +69,81 @@ def callback():
         'client_id':CLIENT_ID,
         'code_verifier':code_verifier
     }
-    
+    print("Payload:", payload)
     token_headers = {
         'Content-Type':'application/x-www-form-urlencoded'
     }
     
     response = requests.post(TOKEN_URL,data=payload,headers=token_headers)
+    if response.status_code != 200:
+        return f"Failed to retrieve access token: {response.text}",400
+    
     token_json = response.json()
+    token_json['expires_at'] = time.time() + token_json['expires_in']
     session['token_info'] = token_json
     return redirect('/playlist')
 
-@app.route('/playlist')
+@app.route('/playlist', methods=['GET','POST'])
 def playlist():
-    token_json = session['token_info']    
-    access_token = token_json.get('access_token')
-    if access_token:
-        playlisttitle, today = getDate()
+    token_json = session['token_info']
+    if not token_json:
+        return redirect('/')
+    
+     # Handle form submission
+    if request.method == 'POST':
+        month = request.form.get('month')
+        year = request.form.get('year')
+        print(f"Selected Month: {month}, Year: {year}")  # Debugging
+
+        # Validate year input
+        if not year.isdigit() or len(year) != 4:
+            return "Invalid year. Please enter a valid year in YYYY format.", 400
+
+        # Create the date string in the format YYYY-MM
+        date = f"{year}-{month}"
+        
+        # Initialize Spotify client
+        access_token = token_json.get('access_token')
+        if not access_token:
+            return "Access token not found in token information.", 400
+        
         sp = spotipy.Spotify(auth=access_token)
         user = sp.current_user()
         username = user['display_name']
         userid = user['id']
-        
-        playlistid = putAllTogether(today,playlisttitle, sp, userid)
-        playlist, songlist, listlen = displayplaylist(playlistid, sp)
-        return render_template('playlist.html',songlist=songlist,user=username,playlist=playlist,listlen=listlen)
-    else:
-        return f'error:{token_json}'
 
+        # Create and display the playlist
+        playlisttitle, today = getDate(date)  # Pass the selected date
+        playlistid = putAllTogether(today, playlisttitle, sp, userid)
+        playlistname, songlist, listlen = displayplaylist(playlistid, sp)
+        return render_template('playlist.html', songlist=songlist, user=username, playlist=playlistname, listlen=listlen)
+    return render_template('playlist.html')
+    
+
+#Logout - Clears Session
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
 #################################################
 ### BEGIN PYTHON METHODS ###
 
 #Gets current month or year
-def getDate():
-    todaytime = datetime.fromtimestamp(time.time())
-    playlisttitle = datetime.strftime(todaytime,'%B %Y') #Month YYYY
-    today = datetime.strftime(todaytime, '%Y-%m') #YYYY-MM
+def getDate(formdate):
+    if not formdate:
+        todaytime = datetime.fromtimestamp(time.time())
+        playlisttitle = datetime.strftime(todaytime,'%B %Y') #Month YYYY
+        today = datetime.strftime(todaytime, '%Y-%m') #YYYY-MM
 
-    #Uncomment and change for specific Month and Year
-    # playlisttitle = "January 2021"
-    # today = "2021-01"
-    
-    return playlisttitle, today
+        #Uncomment and change for specific Month and Year
+        # playlisttitle = "January 2021"
+        # today = "2021-01"
+        
+        return playlisttitle, today
+    else:
+        dateobj = datetime.strptime(formdate,'%Y-%m')
+        playlisttitle = dateobj.strftime('%B %Y')
+        return playlisttitle, formdate
 
 def getSavedTracks(offset, sp):
     savedtracks = sp.current_user_saved_tracks(limit=50,offset=offset) #api limits 50 songs per call
@@ -148,9 +197,9 @@ def putAllTogether(today,playlisttitle, sp, userid):
         else:
             i += 1
     if len(addtrackslist) == 0:
-        print('Saved No songs from that month')
+        print('Saved no songs from that month')
     else:
-        sp.playlist_add_items(playlistid,addtrackslist) #adds remainder of tracks taht doesn't reach the 100 track limit (end of library)
+        sp.playlist_add_items(playlistid,addtrackslist) #adds remainder of tracks that doesn't reach the 100 track limit (end of library)
     return playlistid
 
 def displayplaylist(playlistid, sp):
@@ -175,4 +224,4 @@ def displayplaylist(playlistid, sp):
     
 
 if __name__ == "__main__":
-    app.run(debug = True)
+    app.run(port=8888, debug = True)

@@ -2,15 +2,45 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monthly Playlist</title>
 </head>
 <body>
-    <h1 style='text-align:center'>Hey, {{user}}!</h1>
-    <h2 style='text-align:center'>Your playlist was created!</h2>
-    <h3 style='text-align:center'>{{listlen}} tracks were added to '{{date}}'</h3>
+    <p style='text-align:right'><a href='/logout'>Logout</a></hp>
+    {% if not playlist%}
+        <h3 style='text-align:center'>What month and year do you want to make a playlist of?</h3>
+        <form method="POST" action="{{ url_for('playlist') }}" style="text-align:center">
+            <label for="month">Select Month:</label>
+            <select name="month" id="month">
+                <option value="01">January</option>
+                <option value="02">February</option>
+                <option value="03">March</option>
+                <option value="04">April</option>
+                <option value="05">May</option>
+                <option value="06">June</option>
+                <option value="07">July</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
 
-    {% for song in songlist %}
-        <p style='text-align:center'>{{song}}</p>
-    {% endfor %}
+            <label for="year">Select Year:</label>
+            <input type="text" name="year" id="year" placeholder="YYYY" pattern="\d{4}" required>
+
+            <button type="submit">Create Playlist</button>
+        </form>
+    {% endif %}
+
+    {% if playlist %}
+        <h1 style='text-align:center'>Hey, {{user}}!</h1>
+        <h2 style='text-align:center'>Your playlist was created!</h2>
+        <h3 style='text-align:center'>{{listlen}} tracks were added to '{{playlist}}'</h3>
+
+        {% for song in songlist %}
+            <p style='text-align:center'>{{song}}</p>
+        {% endfor %}
+    {% endif %}
 </body>
 </html>
