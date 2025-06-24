@@ -28,6 +28,50 @@ Session(app)
 def home():
     return render_template('index.html')
 
+#################################################
+#################################################
+#SPLIT CHECK CALCULATOR
+@app.route('/calc', methods=['GET', 'POST'])
+def calc():
+    if request.method == 'POST':
+        eaters = int(request.form['eaters'])
+        prices = [float(request.form[f'price_{i}']) for i in range(1, eaters + 1)]
+        subtotal = sum(prices)
+        sub = float(request.form['subtotal'])
+        rtotal = float(request.form['total'])
+        
+        if subtotal != sub:
+            return render_template('calc.html', error=f'Prices entered do not match subtotal on check. Calc-{subtotal} vs Check-{sub}')
+        
+        taxrate = ((rtotal - sub) / sub) * 100
+        taxamt = rtotal - subtotal
+        taxsplit = taxamt / eaters
+        
+        tip_percentage = float(request.form['tip']) / 100
+        tipamount = subtotal * tip_percentage
+        tipsplit = tipamount / eaters
+        
+        results = {
+            'taxamt': round(taxamt, 2),
+            'taxrate': round(taxrate, 2),
+            'tipamount': round(tipamount, 2),
+            'total_with_tip': round(rtotal + tipamount, 2),
+            'splits': [round(price + tipsplit + taxsplit, 2) for price in prices]
+        }
+        
+        return render_template('results.html', results=results, eaters=eaters)
+
+    return render_template('index.html')
+
+#################################################
+### BEGIN PYTHON METHODS ###
+
+
+
+
+#################################################
+#################################################
+#SPOTIFY MONTHLY PLAYLIST GENERATOR
 #asks for authorization then redirects
 @app.route('/login')
 def login():

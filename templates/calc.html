@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Split Check Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; }
+        .error { color: red; }
+        .form-group { margin-bottom: 1em; }
+    </style>
+    <script>
+        function showPriceInputs() {
+            const eaters = document.getElementById('eaters').value;
+            const pricesDiv = document.getElementById('prices');
+            pricesDiv.innerHTML = '';
+            for (let i = 1; i <= eaters; i++) {
+                pricesDiv.innerHTML += `
+                    <div class="form-group">
+                        <label>Person ${i} price: $<input type="number" step="0.01" name="price_${i}" required></label>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Split Check Calculator</h1>
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+    <form method="post">
+        <div class="form-group">
+            <label>How many people are paying?
+                <input type="number" id="eaters" name="eaters" min="1" required onchange="showPriceInputs()" value="{{ request.form.eaters or '' }}">
+            </label>
+        </div>
+        <div id="prices">
+            {% if request.form.eaters %}
+                {% for i in range(1, int(request.form.eaters) + 1) %}
+                    <div class="form-group">
+                        <label>Person {{ i }} price: $<input type="number" step="0.01" name="price_{{ i }}" required value="{{ request.form['price_' ~ i] }}"></label>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-group">
+            <label>Enter Subtotal from check: $<input type="number" step="0.01" name="subtotal" required value="{{ request.form.subtotal or '' }}"></label>
+        </div>
+        <div class="form-group">
+            <label>Enter Total (with tax): $<input type="number" step="0.01" name="total" required value="{{ request.form.total or '' }}"></label>
+        </div>
+        <div class="form-group">
+            <label>Tip %: <input type="number" step="0.01" name="tip" required value="{{ request.form.tip or '' }}"></label>
+        </div>
+        <button type="submit">Calculate</button>
+    </form>
+</body>
+</html>
