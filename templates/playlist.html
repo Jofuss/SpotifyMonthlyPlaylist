@@ -6,7 +6,7 @@
     <title>Monthly Playlist</title>
 </head>
 <body>
-    <p style='text-align:right'><a href='/logout'>Logout</a></hp>
+    <p style='text-align:right'><a href='/logout'>Logout</a></p>
     {% if not playlist%}
         <h3 style='text-align:center'>What month and year do you want to make a playlist of?</h3>
         <form method="POST" action="{{ url_for('playlist') }}" style="text-align:center">

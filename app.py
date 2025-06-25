@@ -41,7 +41,7 @@ def calc():
         rtotal = float(request.form['total'])
         
         if subtotal != sub:
-            return render_template('calc.html', error=f'Prices entered do not match subtotal on check. Calc-{subtotal} vs Check-{sub}')
+            return render_template('calc.html', error=f'Prices entered do not match subtotal on check. Calc-{subtotal} vs Check-{sub}',int = int)
         
         taxrate = ((rtotal - sub) / sub) * 100
         taxamt = rtotal - subtotal
@@ -59,9 +59,9 @@ def calc():
             'splits': [round(price + tipsplit + taxsplit, 2) for price in prices]
         }
         
-        return render_template('results.html', results=results, eaters=eaters)
+        return render_template('calc.html', results=results, eaters=eaters, int = int)
 
-    return render_template('index.html')
+    return render_template('calc.html', eaters = None, int = int)
 
 #################################################
 ### BEGIN PYTHON METHODS ###
